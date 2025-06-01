@@ -1,0 +1,176 @@
+places:
+  # Poland
+  - label: "Warsaw, Poland"
+    latitude: 52.2297
+    longitude: 21.0122
+    country: "POL"
+
+  - label: "Krakow, Poland"
+    latitude: 50.0647
+    longitude: 19.9450
+    country: "POL"
+
+  - label: "Gdansk, Poland"
+    latitude: 54.3520
+    longitude: 18.6466
+    country: "POL"
+
+  - label: "Wrocław, Poland"
+    latitude: 51.1079
+    longitude: 17.0385
+    country: "POL"
+
+  - label: "Poznan, Poland"
+    latitude: 52.4064
+    longitude: 16.9252
+    country: "POL"
+
+  - label: "Lodz, Poland"
+    latitude: 51.7592
+    longitude: 19.4560
+    country: "POL"
+
+  # Germany
+  - label: "Berlin, Germany"
+    latitude: 52.5200
+    longitude: 13.4050
+    country: "DEU"
+
+  - label: "Munich, Germany"
+    latitude: 48.1351
+    longitude: 11.5820
+    country: "DEU"
+
+  - label: "Hamburg, Germany"
+    latitude: 53.5511
+    longitude: 9.9937
+    country: "DEU"
+
+  - label: "Frankfurt, Germany"
+    latitude: 50.1109
+    longitude: 8.6821
+    country: "DEU"
+
+  # Czech Republic
+  - label: "Prague, Czech Republic"
+    latitude: 50.0755
+    longitude: 14.4378
+    country: "CZE"
+
+  - label: "Brno, Czech Republic"
+    latitude: 49.1951
+    longitude: 16.6068
+    country: "CZE"
+
+  # Austria
+  - label: "Vienna, Austria"
+    latitude: 48.2082
+    longitude: 16.3738
+    country: "AUT"
+
+  - label: "Salzburg, Austria"
+    latitude: 47.8095
+    longitude: 13.0550
+    country: "AUT"
+
+  # France
+  - label: "Paris, France"
+    latitude: 48.8566
+    longitude: 2.3522
+    country: "FRA"
+
+  - label: "Lyon, France"
+    latitude: 45.7640
+    longitude: 4.8357
+    country: "FRA"
+
+  - label: "Eiffel Tower, Paris, France"
+    latitude: 48.8584
+    longitude: 2.2945
+    country: "FRA"
+
+  # Italy
+  - label: "Rome, Italy"
+    latitude: 41.9028
+    longitude: 12.4964
+    country: "ITA"
+
+  - label: "Milan, Italy"
+    latitude: 45.4642
+    longitude: 9.1900
+    country: "ITA"
+
+  - label: "Colosseum, Rome, Italy"
+    latitude: 41.8902
+    longitude: 12.4922
+    country: "ITA"
+
+  # United Kingdom
+  - label: "London, United Kingdom"
+    latitude: 51.5074
+    longitude: -0.1278
+    country: "GBR"
+
+  - label: "Edinburgh, United Kingdom"
+    latitude: 55.9533
+    longitude: -3.1883
+    country: "GBR"
+
+  - label: "Big Ben, London, UK"
+    latitude: 51.4994
+    longitude: -0.1245
+    country: "GBR"
+
+  # Spain
+  - label: "Madrid, Spain"
+    latitude: 40.4168
+    longitude: -3.7038
+    country: "ESP"
+
+  - label: "Barcelona, Spain"
+    latitude: 41.3851
+    longitude: 2.1734
+    country: "ESP"
+
+  # Netherlands
+  - label: "Amsterdam, Netherlands"
+    latitude: 52.3676
+    longitude: 4.9041
+    country: "NLD"
+
+  - label: "Rotterdam, Netherlands"
+    latitude: 51.9244
+    longitude: 4.4777
+    country: "NLD"
+
+  # Belgium
+  - label: "Brussels, Belgium"
+    latitude: 50.8503
+    longitude: 4.3517
+    country: "BEL"
+
+  - label: "Antwerp, Belgium"
+    latitude: 51.2211
+    longitude: 4.4213
+    country: "BEL"
+
+  - label: "Bruges, Belgium"
+    latitude: 51.2093
+    longitude: 3.2247
+    country: "BEL"
+
+  - label: "Ghent, Belgium"
+    latitude: 51.0543
+    longitude: 3.7174
+    country: "BEL"
+
+  # Switzerland
+  - label: "Zurich, Switzerland"
+    latitude: 47.3769
+    longitude: 8.5417
+    country: "CHE"
+
+  - label: "Geneva, Switzerland"
+    latitude: 46.2044
+    longitude: 6.1432
+    country: "CHE"
