@@ -25,24 +25,53 @@ impl LocationBackend for OpenStreetMapBackend {
         request: &SearchRequest,
     ) -> Result<Vec<Place>, Box<dyn std::error::Error>> {
         let max_results = request.max_results.unwrap_or(10);
-        let max_results_string = max_results.to_string();
-        let url = format!("{}/search", self.base_url);
-        let params = vec![
-            ("q", request.text.as_str()),
-            ("format", "json"),
-            ("limit", &max_results_string),
-            ("accept-language", "en"),
-            ("addressdetails", "1"),
-        ];
+        let url;
+        let params;
 
-        let request = self
+        match (&request.text, request.position) {
+            (Some(text), None) => {
+                url = format!("{}/search", self.base_url);
+                params = vec![
+                    ("q", text.clone()),
+                    ("format", "json".to_string()),
+                    ("limit", max_results.to_string()),
+                    ("accept-language", "en".to_string()),
+                    ("addressdetails", "1".to_string()),
+                ];
+            }
+            (None, Some([lon, lat])) => {
+                url = format!("{}/reverse", self.base_url);
+                params = vec![
+                    ("lon", lon.to_string()),
+                    ("lat", lat.to_string()),
+                    ("format", "json".to_string()),
+                    ("accept-language", "en".to_string()),
+                    ("addressdetails", "1".to_string()),
+                ];
+            }
+            _ => {
+                return Err("request must contain exactly one of Text or Position".into());
+            }
+        }
+
+        let response = self
             .client
             .get(&url)
             .query(&params)
-            .header("User-Agent", "LocationServiceMock/1.0");
+            .header("User-Agent", "LocationServiceMock/1.0")
+            .send()
+            .await?;
 
-        let response = request.send().await?;
-        let nominatim_places: Vec<NominatimPlace> = response.json().await?;
+        let response_body: serde_json::Value = response.json().await?;
+        let nominatim_places: Vec<NominatimPlace> = if request.position.is_some() {
+            if response_body.get("error").is_some() {
+                Vec::new()
+            } else {
+                vec![serde_json::from_value(response_body)?]
+            }
+        } else {
+            serde_json::from_value(response_body)?
+        };
 
         let results = nominatim_places
             .into_iter()

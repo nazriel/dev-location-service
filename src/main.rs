@@ -60,19 +60,56 @@ impl Default for SearchPathParams {
     }
 }
 
+#[derive(Clone, Copy)]
+enum SearchType {
+    Text,
+    Position,
+}
+
+async fn search_place_index_for_text(
+    data: web::Data<AppState>,
+    request: web::Json<SearchRequest>,
+    path: web::Path<SearchPathParams>,
+) -> Result<HttpResponse> {
+    search_place_index(data, request, path, SearchType::Text).await
+}
+
+async fn search_place_index_for_position(
+    data: web::Data<AppState>,
+    request: web::Json<SearchRequest>,
+    path: web::Path<SearchPathParams>,
+) -> Result<HttpResponse> {
+    search_place_index(data, request, path, SearchType::Position).await
+}
+
 async fn search_place_index(
     data: web::Data<AppState>,
     request: web::Json<SearchRequest>,
     path: web::Path<SearchPathParams>,
+    search_type: SearchType,
 ) -> Result<HttpResponse> {
     let index_name = match path.search_index {
         Some(ref params) => params.clone(),
         None => "default-index".to_string(),
     };
 
+    let validation = request.validate().and_then(|()| match search_type {
+        SearchType::Text if request.text.is_some() => Ok(()),
+        SearchType::Position if request.position.is_some() => Ok(()),
+        SearchType::Text => Err("Text is required for this endpoint"),
+        SearchType::Position => Err("Position is required for this endpoint"),
+    });
+    if let Err(message) = validation {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Invalid request",
+            "message": message
+        })));
+    }
+
     info!(
         msg = "Received search request",
-        text = request.text.as_str(),
+        text = ?request.text,
+        position = ?request.position,
         max_results = request.max_results.unwrap_or(10),
         index_name = index_name
     );
@@ -82,6 +119,7 @@ async fn search_place_index(
             let response = SearchResponse {
                 summary: SearchSummary {
                     text: request.text.clone(),
+                    position: request.position,
                     max_results: request.max_results.unwrap_or(10),
                     result_count: results.len() as i32,
                 },
@@ -207,7 +245,7 @@ async fn main() -> std::io::Result<()> {
     info!(msg = "Starting Location Service Mock");
     info!(msg = "Backend selected", backend = backend_type.as_str());
     info!(msg = "Server address", server = %format!("http://localhost:{}", port));
-    info!(msg = "Available endpoints", endpoints = ?["POST /search", "GET /health", "GET /info"]);
+    info!(msg = "Available endpoints", endpoints = ?["POST /search", "POST /position", "GET /health", "GET /info"]);
     info!(msg = "Environment variables", location_backend = backend_type.as_str(), port = %port);
     if matches!(backend_type, BackendType::Predefined) {
         let config_path =
@@ -220,9 +258,14 @@ async fn main() -> std::io::Result<()> {
             .app_data(app_state.clone())
             .route(
                 "/places/v0/indexes/{search_index}/search/text",
-                web::post().to(search_place_index),
+                web::post().to(search_place_index_for_text),
             )
-            .route("/search", web::post().to(search_place_index))
+            .route(
+                "/places/v0/indexes/{search_index}/search/position",
+                web::post().to(search_place_index_for_position),
+            )
+            .route("/search", web::post().to(search_place_index_for_text))
+            .route("/position", web::post().to(search_place_index_for_position))
             .route("/health", web::get().to(health))
             .route("/info", web::get().to(info))
     })

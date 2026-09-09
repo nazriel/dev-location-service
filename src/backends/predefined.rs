@@ -108,6 +108,20 @@ impl PredefinedBackend {
 
         best_score.into()
     }
+
+    fn distance_km(position: [f64; 2], place: &PredefinedPlace) -> f64 {
+        let [longitude, latitude] = position;
+        let latitude_delta = (place.latitude - latitude).to_radians();
+        let longitude_delta = (place.longitude - longitude).to_radians();
+        let latitude_radians = latitude.to_radians();
+        let place_latitude_radians = place.latitude.to_radians();
+        let a = (latitude_delta / 2.0).sin().powi(2)
+            + latitude_radians.cos()
+                * place_latitude_radians.cos()
+                * (longitude_delta / 2.0).sin().powi(2);
+
+        6_371.0 * 2.0 * a.sqrt().atan2((1.0 - a).sqrt())
+    }
 }
 
 #[async_trait]
@@ -117,29 +131,38 @@ impl LocationBackend for PredefinedBackend {
         request: &SearchRequest,
     ) -> Result<Vec<Place>, Box<dyn std::error::Error>> {
         let max_results = request.max_results.unwrap_or(10) as usize;
-        let query = &request.text;
+        let mut scored_places: Vec<(PredefinedPlace, f64)> = match (&request.text, request.position)
+        {
+            (Some(query), None) => self
+                .places
+                .iter()
+                .map(|place| (place.clone(), self.calculate_relevance(query, place)))
+                .collect(),
+            (None, Some(position)) => self
+                .places
+                .iter()
+                .map(|place| {
+                    let distance = Self::distance_km(position, place);
+                    (place.clone(), 1.0 / (1.0 + distance))
+                })
+                .collect(),
+            _ => {
+                return Err("request must contain exactly one of Text or Position".into());
+            }
+        };
 
-        let mut scored_places: Vec<(PredefinedPlace, f64)> = self
-            .places
-            .iter()
-            .map(|place| {
-                let relevance = self.calculate_relevance(query, place);
-                (place.clone(), relevance)
-            })
-            .collect();
-
-        // Sort by relevance (highest first)
+        // Sort by relevance (highest first).
         scored_places.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 
-        // If no good matches (all relevance < 0.3), return random places
-        if scored_places.is_empty() || scored_places[0].1 < 0.3 {
+        // Text searches retain the mock's fallback behavior when no place matches.
+        if request.text.is_some() && (scored_places.is_empty() || scored_places[0].1 < 0.3) {
             let mut rng = rand::rng();
             let mut random_places = self.places.clone();
             random_places.shuffle(&mut rng);
             scored_places = random_places
                 .into_iter()
                 .take(max_results)
-                .map(|place| (place, 0.5)) // Give random places moderate relevance
+                .map(|place| (place, 0.5))
                 .collect();
         }
 
