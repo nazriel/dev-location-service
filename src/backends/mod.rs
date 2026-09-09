@@ -2,10 +2,13 @@
 use crate::models::{Place, SearchRequest};
 use async_trait::async_trait;
 
-pub mod predefined;
 pub mod openstreetmap;
+pub mod predefined;
 
 #[async_trait]
 pub trait LocationBackend {
-    async fn search(&self, request: &SearchRequest) -> Result<Vec<Place>, Box<dyn std::error::Error>>;
+    async fn search(
+        &self,
+        request: &SearchRequest,
+    ) -> Result<Vec<Place>, Box<dyn std::error::Error>>;
 }
